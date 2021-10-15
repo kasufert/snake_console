@@ -3,7 +3,7 @@ using System.Linq;
 namespace Game;
 enum Direction
 {
-	Up, Down, Left, Right
+	Up, Down, Left, Right, UpLeft, UpRight, DownLeft, DownRight, Stopped
 }
 static class snek
 {
@@ -32,24 +32,25 @@ static class snek
 			while (true)
 			{
 				DrawBoard(snake);
-				Thread.Sleep(30);
+				Thread.Sleep(60);
 				if (KeyAvailable) GetDirection();
 				if (snake[0].IsLocatedAt(foodX, foodY) || snake[0].IsLocatedAt(foodX+1, foodY))
 				{
 					length++;
-					snake.PropagateMovement(direction, true);
+					if (direction is Direction.Up or Direction.Down or Direction.Left or Direction.Right)
+						snake.PropagateMovement(direction, true, false);
+					else snake.PropagateMovement(direction, true, true);
 					SetCursorPosition(foodX, foodY);
 					(foodX, foodY) = PlaceFood(snake);
 				}
 				else
 				{
-					snake.PropagateMovement(direction, false);
+					snake.PropagateMovement(direction, false, false);
 				}
 				if (snake.Where(s => s.IsLocatedAt(snake[0].xPos, snake[0].yPos)).Count() > 1) break;
 				if (snake[0].xPos is (0 or 1 or width or width-1)) break;
 				if (snake[0].yPos is (0 or height)) break;
 			}
-
 			WriteLine("You Died\nGet Fucked!");
 			WriteLine("Your Length: " + length);
 			ReadLine();
@@ -57,21 +58,40 @@ static class snek
 		}
 		void GetDirection()
 		{
-			switch (ReadKey().Key)
+			switch(ReadKey(true).Key)
 			{
-				case ConsoleKey.UpArrow:
+				case ConsoleKey.NumPad5:
+					direction = Direction.Stopped;
+					break;
+				case ConsoleKey.NumPad7:
+					if (direction != Direction.DownRight)
+						direction = Direction.UpLeft;
+					break;
+				case ConsoleKey.NumPad9:
+					if (direction != Direction.DownLeft)
+						direction = Direction.UpRight;
+					break;
+				case ConsoleKey.NumPad1:
+					if (direction != Direction.UpRight)
+						direction = Direction.DownLeft;
+					break;
+				case ConsoleKey.NumPad3:
+					if (direction != Direction.UpLeft)
+						direction = Direction.DownRight;
+					break;
+				case ConsoleKey.NumPad8:
 					if (direction != Direction.Down)
 						direction = Direction.Up;
 					break;
-				case ConsoleKey.DownArrow:
+				case ConsoleKey.NumPad2:
 					if (direction != Direction.Up)
 						direction = Direction.Down;
 					break;
-				case ConsoleKey.LeftArrow:
+				case ConsoleKey.NumPad4:
 					if (direction != Direction.Right)
 						direction = Direction.Left;
 					break;
-				case ConsoleKey.RightArrow:
+				case ConsoleKey.NumPad6:
 					if (direction != Direction.Left)
 						direction = Direction.Right;
 					break;
@@ -89,14 +109,14 @@ static class snek
 			if (xPos % 2 == 0) xPos--;
 			yPos = rand.Next(1, height - 1);
 		} while (snake.Any(s => s.IsLocatedAt(xPos, yPos)));
+		SetCursorPosition(xPos+2, yPos-1);
+		Write(",");
 		SetCursorPosition(xPos+1, yPos);
 		Write("()");
-		SetCursorPosition(xPos+2, yPos-1);
-		Write("/");
 		return (xPos, yPos);
 	}
-	static void PropagateMovement(this List<BodyPart> snake, Direction headDir, bool grow)
-	{
+	static void PropagateMovement(this List<BodyPart> snake, Direction headDir, bool grow, bool tripleGrow)
+	{ 
 		foreach (var segment in snake) // Updating previous positions
 		{
 			segment.prevX = segment.xPos;
@@ -104,6 +124,24 @@ static class snek
 		}
 		switch (headDir) // Moving the head
 		{
+			case Direction.Stopped:
+				return;
+			case Direction.UpLeft:
+				snake[0].yPos--;
+				snake[0].xPos-=2;
+				break;
+			case Direction.UpRight:
+				snake[0].yPos--;
+				snake[0].xPos+=2;
+				break;
+			case Direction.DownLeft:
+				snake[0].xPos -= 2;
+				snake[0].yPos++;
+				break;
+			case Direction.DownRight:
+				snake[0].xPos += 2;
+				snake[0].yPos++;
+				break;
 			case Direction.Up:
 				snake[0].yPos--;
 				break;
@@ -127,6 +165,59 @@ static class snek
 			snake.Add(new(snake[snake.Count - 1].prevX, snake[snake.Count - 1].prevY));
 			SetCursorPosition(11, height - 1);
 			Write(snake.Count);
+		}
+		if (tripleGrow)
+		{
+			for (int j = 0; j < 2; j++)
+			{
+				foreach (var segment in snake) // Updating previous positions
+				{
+					segment.prevX = segment.xPos;
+					segment.prevY = segment.yPos;
+				}
+				switch (headDir) // Moving the head
+				{
+					case Direction.Stopped:
+						return;
+					case Direction.UpLeft:
+						snake[0].yPos--;
+						snake[0].xPos -= 2;
+						break;
+					case Direction.UpRight:
+						snake[0].yPos--;
+						snake[0].xPos += 2;
+						break;
+					case Direction.DownLeft:
+						snake[0].xPos -= 2;
+						snake[0].yPos++;
+						break;
+					case Direction.DownRight:
+						snake[0].xPos += 2;
+						snake[0].yPos++;
+						break;
+					case Direction.Up:
+						snake[0].yPos--;
+						break;
+					case Direction.Down:
+						snake[0].yPos++;
+						break;
+					case Direction.Left:
+						snake[0].xPos -= 2;
+						break;
+					case Direction.Right:
+						snake[0].xPos += 2;
+						break;
+				}
+				for (int i = 1; i < snake.Count; i++)
+				{
+					snake[i].xPos = snake[i - 1].prevX;
+					snake[i].yPos = snake[i - 1].prevY;
+				}
+				snake.Add(new(snake[snake.Count - 1].prevX, snake[snake.Count - 1].prevY));
+				SetCursorPosition(11, height - 1);
+				Write(snake.Count);
+
+			}
 		}
 	}
 

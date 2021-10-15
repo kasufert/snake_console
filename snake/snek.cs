@@ -1,6 +1,12 @@
 ﻿using static System.Console;
 using static System.Threading.Thread;
+using System;
 using System.Linq;
+using System.Reflection;
+using System.IO;
+using System.Resources;
+using System.Media;
+using System.Diagnostics;
 namespace Game;
 enum Direction
 {
@@ -20,6 +26,11 @@ static class snek
 		var (foodX, foodY) = (0, 0);
 		var songThread = new Thread(Song);
 		songThread.Start();
+		var clearRowString = "";
+		for (int i = 0; i < width-2; i+=1)
+		{
+			clearRowString += " ";
+		}
 		while(true)
 		{
 			direction = Direction.Up;
@@ -29,22 +40,22 @@ static class snek
 			snake.Add(new BodyPart(width/2, height/2));
 			CursorVisible = false;
 			DrawBorder();
-			(foodX, foodY) = PlaceFood(snake);
+			(foodX, foodY) = PlaceFood(snake, clearRowString);
 			SetCursorPosition(11, height - 1);
 			Write(snake.Count);
 			while (true)
 			{
-				DrawBoard(snake);
+				DrawBoard(snake, direction);
 				Sleep(60);
 				if (KeyAvailable) GetDirection();
-				if (snake[0].IsLocatedAt(foodX, foodY) || snake[0].IsLocatedAt(foodX+1, foodY))
+				if (snake[0].IsLocatedAt(foodX - 1, foodY) || snake[0].IsLocatedAt(foodX+1, foodY) || snake[0].IsLocatedAt(foodX+3, foodY))
 				{
 					length++;
 					if (direction is Direction.Up or Direction.Down or Direction.Left or Direction.Right)
 						snake.PropagateMovement(direction, true, false);
 					else snake.PropagateMovement(direction, true, true);
 					SetCursorPosition(foodX, foodY);
-					(foodX, foodY) = PlaceFood(snake);
+					(foodX, foodY) = PlaceFood(snake, clearRowString);
 				}
 				else
 				{
@@ -105,21 +116,37 @@ static class snek
 			}
 		}
 	}
-	static (int,int) PlaceFood(List<BodyPart> snake)
+	static (int,int) PlaceFood(List<BodyPart> snake, string clearRow)
 	{
+		for (int y = 1; y < height; y++)
+		{
+			SetCursorPosition(2, y);
+			Write(clearRow);
+		}
+		SetCursorPosition(2, height - 2);
+		Write("Crewmates Killed: " + (snake.Count-1));
+		SetCursorPosition(2, height - 1);
+		Write("by Kasufert");
 		Random rand = new Random();
 		var xPos = 0;
 		var yPos = 0;
 		do
 		{
-			xPos = rand.Next(2, width-2);
+			xPos = rand.Next(10, width-10);
 			if (xPos % 2 == 0) xPos--;
-			yPos = rand.Next(1, height - 1);
+			yPos = rand.Next(10, height - 10);
 		} while (snake.Any(s => s.IsLocatedAt(xPos, yPos)));
-		SetCursorPosition(xPos+2, yPos-1);
-		Write(",");
-		SetCursorPosition(xPos+1, yPos);
-		Write("()");
+		SetCursorPosition(xPos - 1, yPos - 1);
+		Write(".------.");
+		SetCursorPosition(xPos - 1, yPos + 0);
+		Write("| <==> |");
+		SetCursorPosition(xPos - 1, yPos + 1);
+		Write("|  __  |");
+		SetCursorPosition(xPos - 1, yPos + 2);
+		Write("| |  | |");
+		SetCursorPosition(xPos - 1, yPos + 3);
+		Write("--   --");
+
 		return (xPos, yPos);
 	}
 	static void PropagateMovement(this List<BodyPart> snake, Direction headDir, bool grow, bool tripleGrow)
@@ -261,13 +288,33 @@ static class snek
 		SetCursorPosition(width - 12, height - 1);
 		Write("By Kasufert");
 	}
-	static void DrawBoard(List<BodyPart> snake)
+	static void DrawBoard(List<BodyPart> snake, Direction direction)
 	{
-		SetCursorPosition(snake[snake.Count - 1].prevX, snake[snake.Count - 1].prevY); // Updates tail
-		Write("  ");
-
-		SetCursorPosition(snake[0].xPos, snake[0].yPos); // Updates head
-		Write("[]");
+		SetCursorPosition(snake[snake.Count - 1].prevX, snake[snake.Count - 1].prevY);
+		Write("   ");
+		foreach (var seg in snake)
+		{
+			SetCursorPosition(seg.xPos, seg.yPos); // Updates head
+			Write("SUS");
+		}
+		SetCursorPosition(snake[0].xPos, snake[0].yPos);
+		switch (direction)
+		{
+			case Direction.Up:
+				Write("SUS");
+				break;
+			case Direction.Down:
+				Write("SUS");
+				break;
+			case Direction.Left:
+				Write("SUS");
+				break;
+			case Direction.Right:
+				Write("SUS");
+				break;
+			default:
+				break;
+		}
 	}
 
 	static void Song()

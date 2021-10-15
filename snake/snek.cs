@@ -7,8 +7,8 @@ enum Direction
 }
 static class snek
 {
-	const int height = 20;
-	const int width = 50;
+	const int height = 40;
+	const int width = 100;
 	const int growEvery = 10;
 	static void Main(string[] args)
 	{
@@ -16,7 +16,7 @@ static class snek
 		WindowWidth = width+2;
 		var direction = Direction.Up;
 		var length = 1;
-		var (foodX, foodY) = (0,0);
+		var (foodX, foodY) = (0, 0);
 		while(true)
 		{
 			direction = Direction.Up;
@@ -27,17 +27,18 @@ static class snek
 			CursorVisible = false;
 			DrawBorder();
 			(foodX, foodY) = PlaceFood(snake);
+			SetCursorPosition(11, height - 1);
+			Write(snake.Count);
 			while (true)
 			{
 				DrawBoard(snake);
-				Beep();
+				Thread.Sleep(30);
 				if (KeyAvailable) GetDirection();
 				if (snake[0].IsLocatedAt(foodX, foodY) || snake[0].IsLocatedAt(foodX+1, foodY))
 				{
 					length++;
 					snake.PropagateMovement(direction, true);
 					SetCursorPosition(foodX, foodY);
-					Write("  ");
 					(foodX, foodY) = PlaceFood(snake);
 				}
 				else
@@ -84,8 +85,8 @@ static class snek
 		var yPos = 0;
 		do
 		{
-			xPos = rand.Next(2, width-1);
-			if (xPos % 2 == 1) xPos--;
+			xPos = rand.Next(2, width-2);
+			if (xPos % 2 == 0) xPos--;
 			yPos = rand.Next(1, height - 1);
 		} while (snake.Any(s => s.IsLocatedAt(xPos, yPos)));
 		SetCursorPosition(xPos+1, yPos);
@@ -122,8 +123,11 @@ static class snek
 		if (grow)
 		{
 			snake.Add(new(snake[snake.Count - 1].prevX, snake[snake.Count - 1].prevY));
+			SetCursorPosition(11, height - 1);
+			Write(snake.Count);
 		}
 	}
+
 	static void DrawBorder()
 	{
 		var xPos = 0;
@@ -152,20 +156,18 @@ static class snek
 			Write("|");
 			yPos--;
 		}
+		SetCursorPosition(2, height - 1);
+		Write("Length: ");
 		SetCursorPosition(width - 12, height - 1);
 		Write("By Kasufert");
 	}
 	static void DrawBoard(List<BodyPart> snake)
 	{
-		SetCursorPosition(snake[snake.Count - 1].prevX, snake[snake.Count - 1].prevY);
+		SetCursorPosition(snake[snake.Count - 1].prevX, snake[snake.Count - 1].prevY); // Updates tail
 		Write("  ");
-		SetCursorPosition(1, height-1);
-		Write("Length: " + snake.Count);
-		foreach (var segment in snake)
-		{
-			SetCursorPosition(segment.xPos, segment.yPos);
-			Write("[]");
-		}
+
+		SetCursorPosition(snake[0].xPos, snake[0].yPos); // Updates head
+		Write("[]");
 	}
 }
 class BodyPart

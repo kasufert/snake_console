@@ -91,6 +91,8 @@ static class snek
 		} while (snake.Any(s => s.IsLocatedAt(xPos, yPos)));
 		SetCursorPosition(xPos+1, yPos);
 		Write("()");
+		SetCursorPosition(xPos+2, yPos-1);
+		Write("/");
 		return (xPos, yPos);
 	}
 	static void PropagateMovement(this List<BodyPart> snake, Direction headDir, bool grow)

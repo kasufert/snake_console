@@ -1,4 +1,5 @@
 ﻿using static System.Console;
+using static System.Threading.Thread;
 using System.Linq;
 namespace Game;
 enum Direction
@@ -17,6 +18,8 @@ static class snek
 		var direction = Direction.Up;
 		var length = 1;
 		var (foodX, foodY) = (0, 0);
+		var songThread = new Thread(Song);
+		songThread.Start();
 		while(true)
 		{
 			direction = Direction.Up;
@@ -32,7 +35,7 @@ static class snek
 			while (true)
 			{
 				DrawBoard(snake);
-				Thread.Sleep(60);
+				Sleep(60);
 				if (KeyAvailable) GetDirection();
 				if (snake[0].IsLocatedAt(foodX, foodY) || snake[0].IsLocatedAt(foodX+1, foodY))
 				{
@@ -51,8 +54,7 @@ static class snek
 				if (snake[0].xPos is (0 or 1 or width or width-1)) break;
 				if (snake[0].yPos is (0 or height)) break;
 			}
-			WriteLine("You Died\nGet Fucked!");
-			WriteLine("Your Length: " + length);
+			WriteLine("YOU DIED, Your Length: " + length);
 			ReadLine();
 
 		}
@@ -61,6 +63,7 @@ static class snek
 			switch(ReadKey(true).Key)
 			{
 				case ConsoleKey.NumPad5:
+				case ConsoleKey.Spacebar:
 					direction = Direction.Stopped;
 					break;
 				case ConsoleKey.NumPad7:
@@ -80,18 +83,22 @@ static class snek
 						direction = Direction.DownRight;
 					break;
 				case ConsoleKey.NumPad8:
+				case ConsoleKey.UpArrow:
 					if (direction != Direction.Down)
 						direction = Direction.Up;
 					break;
 				case ConsoleKey.NumPad2:
+				case ConsoleKey.DownArrow:
 					if (direction != Direction.Up)
 						direction = Direction.Down;
 					break;
 				case ConsoleKey.NumPad4:
+				case ConsoleKey.LeftArrow:
 					if (direction != Direction.Right)
 						direction = Direction.Left;
 					break;
 				case ConsoleKey.NumPad6:
+				case ConsoleKey.RightArrow:
 					if (direction != Direction.Left)
 						direction = Direction.Right;
 					break;
@@ -262,6 +269,14 @@ static class snek
 		SetCursorPosition(snake[0].xPos, snake[0].yPos); // Updates head
 		Write("[]");
 	}
+
+	static void Song()
+	{
+		while(true)
+		{
+			Beep(659, 125); Beep(659, 125); Sleep(125); Beep(659, 125); Sleep(167); Beep(523, 125); Beep(659, 125); Sleep(125); Beep(784, 125); Sleep(375); Beep(392, 125); Sleep(375); Beep(523, 125); Sleep(250); Beep(392, 125); Sleep(250); Beep(330, 125); Sleep(250); Beep(440, 125); Sleep(125); Beep(494, 125); Sleep(125); Beep(466, 125); Sleep(42); Beep(440, 125); Sleep(125); Beep(392, 125); Sleep(125); Beep(659, 125); Sleep(125); Beep(784, 125); Sleep(125); Beep(880, 125); Sleep(125); Beep(698, 125); Beep(784, 125); Sleep(125); Beep(659, 125); Sleep(125); Beep(523, 125); Sleep(125); Beep(587, 125); Beep(494, 125); Sleep(125); Beep(523, 125); Sleep(250); Beep(392, 125); Sleep(250); Beep(330, 125); Sleep(250); Beep(440, 125); Sleep(125); Beep(494, 125); Sleep(125); Beep(466, 125); Sleep(42); Beep(440, 125); Sleep(125); Beep(392, 125); Sleep(125); Beep(659, 125); Sleep(125); Beep(784, 125); Sleep(125); Beep(880, 125); Sleep(125); Beep(698, 125); Beep(784, 125); Sleep(125); Beep(659, 125); Sleep(125); Beep(523, 125); Sleep(125); Beep(587, 125); Beep(494, 125); Sleep(375); Beep(784, 125); Beep(740, 125); Beep(698, 125); Sleep(42); Beep(622, 125); Sleep(125); Beep(659, 125); Sleep(167); Beep(415, 125); Beep(440, 125); Beep(523, 125); Sleep(125); Beep(440, 125); Beep(523, 125); Beep(587, 125); Sleep(250); Beep(784, 125); Beep(740, 125); Beep(698, 125); Sleep(42); Beep(622, 125); Sleep(125); Beep(659, 125); Sleep(167); Beep(698, 125); Sleep(125); Beep(698, 125); Beep(698, 125); Sleep(625); Beep(784, 125); Beep(740, 125); Beep(698, 125); Sleep(42); Beep(622, 125); Sleep(125); Beep(659, 125); Sleep(167); Beep(415, 125); Beep(440, 125); Beep(523, 125); Sleep(125); Beep(440, 125); Beep(523, 125); Beep(587, 125); Sleep(250); Beep(622, 125); Sleep(250); Beep(587, 125); Sleep(250); Beep(523, 125); Sleep(1125); Beep(784, 125); Beep(740, 125); Beep(698, 125); Sleep(42); Beep(622, 125); Sleep(125); Beep(659, 125); Sleep(167); Beep(415, 125); Beep(440, 125); Beep(523, 125); Sleep(125); Beep(440, 125); Beep(523, 125); Beep(587, 125); Sleep(250); Beep(784, 125); Beep(740, 125); Beep(698, 125); Sleep(42); Beep(622, 125); Sleep(125); Beep(659, 125); Sleep(167); Beep(698, 125); Sleep(125); Beep(698, 125); Beep(698, 125); Sleep(625); Beep(784, 125); Beep(740, 125); Beep(698, 125); Sleep(42); Beep(622, 125); Sleep(125); Beep(659, 125); Sleep(167); Beep(415, 125); Beep(440, 125); Beep(523, 125); Sleep(125); Beep(440, 125); Beep(523, 125); Beep(587, 125); Sleep(250); Beep(622, 125); Sleep(250); Beep(587, 125); Sleep(250); Beep(523, 125); Sleep(1000);
+		}
+	}
 }
 class BodyPart
 {
@@ -279,3 +294,4 @@ class BodyPart
 
 	public bool IsLocatedAt(int x, int y) => (x == xPos) && (y == yPos);	
 }
+
